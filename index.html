@@ -3,26 +3,103 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Scientific Video Loop</title>
+  <title>Scientific Video Viewer</title>
   <style>
     body {
       margin: 0;
       background-color: black;
+      color: white;
+      font-family: sans-serif;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
       height: 100vh;
     }
     video {
       max-width: 100%;
-      max-height: 100%;
+      max-height: 80vh;
+      margin-bottom: 10px;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    input[type=range] {
+      width: 300px;
+    }
+    button {
+      padding: 4px 10px;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
-  <video autoplay loop muted playsinline>
-    <source src="AKswing.mp4" type="video/mp4" />
+  <video id="video" muted>
+    <source src="your-video.mp4" type="video/mp4" />
     Your browser does not support the video tag.
   </video>
+
+  <div class="controls">
+    <button id="playPause">Play</button>
+    <button id="prevFrame">◀ Frame</button>
+    <button id="nextFrame">Frame ▶</button>
+    <input type="range" id="seekBar" value="0" step="0.01">
+    <span id="timeDisplay">0.00 / 0.00</span>
+  </div>
+
+  <script>
+    const video = document.getElementById('video');
+    const playPause = document.getElementById('playPause');
+    const prevFrame = document.getElementById('prevFrame');
+    const nextFrame = document.getElementById('nextFrame');
+    const seekBar = document.getElementById('seekBar');
+    const timeDisplay = document.getElementById('timeDisplay');
+
+    const fps = 12; // adjust if your video uses a different frame rate
+
+    // Update play/pause button
+    playPause.addEventListener('click', () => {
+      if (video.paused) {
+        video.play();
+        playPause.textContent = 'Pause';
+      } else {
+        video.pause();
+        playPause.textContent = 'Play';
+      }
+    });
+
+    // Frame-by-frame navigation
+    prevFrame.addEventListener('click', () => {
+      video.pause();
+      video.currentTime = Math.max(0, video.currentTime - 1 / fps);
+    });
+
+    nextFrame.addEventListener('click', () => {
+      video.pause();
+      video.currentTime = Math.min(video.duration, video.currentTime + 1 / fps);
+    });
+
+    // Seek bar behavior
+    video.addEventListener('loadedmetadata', () => {
+      seekBar.max = video.duration;
+    });
+
+    video.addEventListener('timeupdate', () => {
+      seekBar.value = video.currentTime;
+      timeDisplay.textContent = `${video.currentTime.toFixed(2)} / ${video.duration.toFixed(2)}`;
+    });
+
+    seekBar.addEventListener('input', () => {
+      video.currentTime = seekBar.value;
+    });
+
+    // Default to paused on load
+    video.addEventListener('loadeddata', () => {
+      video.pause();
+      playPause.textContent = 'Play';
+    });
+  </script>
 </body>
 </html>
